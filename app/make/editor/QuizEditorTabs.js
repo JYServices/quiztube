@@ -495,6 +495,35 @@ export default function QuizEditorTabs() {
         window.alert(bsonString);
     };
 
+    // freeimage.host 이미지 업로드 함수 (이제 백엔드 프록시 사용)
+    async function uploadToFreeImageHost(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch('/api/imageupload', {
+            method: 'POST',
+            body: formData,
+        });
+        const data = await res.json();
+        if (res.ok && data.url) {
+            return data.url;
+        } else {
+            throw new Error(data.error || '이미지 업로드 실패');
+        }
+    }
+
+    // 썸네일 파일 업로드 핸들러
+    const handleThumbnailFile = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        try {
+            const url = await uploadToFreeImageHost(file);
+            setQuizInfo(prev => ({ ...prev, thumbnail: url }));
+            alert('이미지 업로드 성공!');
+        } catch (err) {
+            alert('이미지 업로드 실패: ' + err.message);
+        }
+    };
+
     return (
         <div className="max-w-5xl mx-auto px-4 py-12">
             <h1 className="text-5xl font-black mb-10 text-center text-[#222] tracking-tight flex items-center justify-center gap-3">
@@ -563,7 +592,16 @@ export default function QuizEditorTabs() {
                             </div>
                             <div className="md:col-span-2">
                                 <label className={labelClass}>썸네일 URL</label>
-                                <input name="thumbnail" value={quizInfo.thumbnail} onChange={handleQuizInfoChange} required className={inputClass + ' bg-[#f9f9f9] border-none focus:ring-[#FF0000]'} type="url" placeholder="썸네일 이미지 URL (필수)" />
+                                <div className="flex gap-2 items-center">
+                                    <input name="thumbnail" value={quizInfo.thumbnail} onChange={handleQuizInfoChange} required className={inputClass + ' bg-[#f9f9f9] border-none focus:ring-[#FF0000]'} type="url" placeholder="썸네일 이미지 URL (직접 입력 또는 업로드)" />
+                                    <label className="inline-block cursor-pointer bg-[#FF0000] hover:bg-[#d90000] text-white font-bold px-4 py-2 rounded transition text-sm">
+                                        파일 업로드
+                                        <input type="file" accept="image/*" onChange={handleThumbnailFile} className="hidden" />
+                                    </label>
+                                </div>
+                                {quizInfo.thumbnail && (
+                                    <img src={quizInfo.thumbnail} alt="썸네일 미리보기" className="mt-3 rounded shadow w-64 h-40 object-cover border" />
+                                )}
                             </div>
                         </div>
                     </div>

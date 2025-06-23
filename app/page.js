@@ -33,7 +33,7 @@ export default async function QuizListPage() {
                     >
                         {/* Link 컴포넌트를 사용하여 /quiz/{_id}/play 경로로 이동 */}
                         <Link
-                            href={`/quiz/${quiz._id}/play`}
+                            href={`/quiz/${quiz._id}/preview`}
                             className="text-xl font-semibold text-blue-600 hover:underline mb-2"
                         >
                             {quiz.title}
